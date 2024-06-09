@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blender 3D Animation</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        let scene, camera, renderer, model, mixer, clock;
+        const links = {
+            "Plane014": "https://example.com/link1",
+            "Plane012_1": "https://example.com/link2",
+            "Plane009_1": "https://example.com/link3",
+            "Plane008_1": "https://example.com/link4",
+            "Plane007_1": "https://example.com/link5",
+            "Plane015": "https://example.com/link6",
+            "Plane013": "https://example.com/link7"
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x172639); // Установка фона на #172639
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Яркий свет
+            scene.add(ambientLight);
+
+            const loader = new THREE.GLTFLoader();
+            loader.load('model.glb', function (gltf) {
+                model = gltf.scene;
+                scene.add(model);
+
+                // Настройка анимации
+                mixer = new THREE.AnimationMixer(model);
+                gltf.animations.forEach((clip) => {
+                    const action = mixer.clipAction(clip);
+                    action.setLoop(THREE.LoopOnce);  // Настройка для остановки анимации после одного прохода
+                    action.clampWhenFinished = true; // Оставить объект в последнем кадре после завершения
+                    action.play();
+                });
+
+                clock = new THREE.Clock();
+
+                // Подсчет количества элементов в модели
+                const elementCount = model.children.length;
+                console.log(`Количество элементов в модели: ${elementCount}`);
+
+                animate();
+            });
+
+            camera.position.z = 5;
+
+            // Добавление события для отображения ссылок при клике
+            window.addEventListener('click', (event) => {
+                const intersects = getIntersects(event.layerX, event.layerY);
+                if (intersects.length > 0) {
+                    const object = intersects[0].object;
+                    const elementName = object.name;
+                    const link = links[elementName];
+                    if (link) {
+                        console.log(`Элемент: ${elementName}, Ссылка: ${link}`);
+                        // Открыть ссылку в новой вкладке
+                        window.open(link, '_blank');
+                    } else {
+                        console.log(`Элемент: ${elementName}, Ссылка не найдена`);
+                    }
+                }
+            });
+        }
+
+        function getIntersects(x, y) {
+            const mouseVector = new THREE.Vector2();
+            mouseVector.x = (x / window.innerWidth) * 2 - 1;
+            mouseVector.y = - (y / window.innerHeight) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouseVector, camera);
+
+            return raycaster.intersectObjects(model.children, true);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            if (mixer) mixer.update(delta);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', function () {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+        
+
+        init();
+    </script>
+</body>
+</html>
