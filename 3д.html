@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blender 3D Animation</title>
+    <title>КАРТА</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
+        //Здесь добавляются сслылки самый первый это чуй и бишкек и по часовой 
         let scene, camera, renderer, model, mixer, clock;
         const links = {
             "Plane014": "https://example.com/link1",
@@ -33,26 +34,26 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Яркий свет
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1); 
             scene.add(ambientLight);
 
             const loader = new THREE.GLTFLoader();
-            loader.load('model.glb', function (gltf) {
+            loader.load('./model.glb', function (gltf) {
                 model = gltf.scene;
                 scene.add(model);
 
-                // Настройка анимации
+               
                 mixer = new THREE.AnimationMixer(model);
                 gltf.animations.forEach((clip) => {
                     const action = mixer.clipAction(clip);
-                    action.setLoop(THREE.LoopOnce);  // Настройка для остановки анимации после одного прохода
-                    action.clampWhenFinished = true; // Оставить объект в последнем кадре после завершения
+                    action.setLoop(THREE.LoopOnce); 
+                    action.clampWhenFinished = true;
                     action.play();
                 });
 
                 clock = new THREE.Clock();
 
-                // Подсчет количества элементов в модели
+              
                 const elementCount = model.children.length;
                 console.log(`Количество элементов в модели: ${elementCount}`);
 
@@ -61,7 +62,7 @@
 
             camera.position.z = 5;
 
-            // Добавление события для отображения ссылок при клике
+           
             window.addEventListener('click', (event) => {
                 const intersects = getIntersects(event.layerX, event.layerY);
                 if (intersects.length > 0) {
@@ -70,7 +71,7 @@
                     const link = links[elementName];
                     if (link) {
                         console.log(`Элемент: ${elementName}, Ссылка: ${link}`);
-                        // Открыть ссылку в новой вкладке
+                       
                         window.open(link, '_blank');
                     } else {
                         console.log(`Элемент: ${elementName}, Ссылка не найдена`);
